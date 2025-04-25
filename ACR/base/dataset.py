@@ -9,6 +9,7 @@ import torchvision.transforms.functional as F
 from PIL import Image
 from torch.utils.data import DataLoader
 from torchvision import transforms
+import pdb
 
 
 class DynamicFARDataset(torch.utils.data.Dataset):
@@ -108,7 +109,7 @@ class DynamicFARDataset(torch.utils.data.Dataset):
         else:
             size = self.input_size
         self.feat_size = size / 16 # upsampled MAE feature size
-
+        
         # load image
         img = cv2.imread(self.data[index])
         while img is None:
@@ -118,6 +119,7 @@ class DynamicFARDataset(torch.utils.data.Dataset):
         # origin_h, origin_w = img.shape[:2]
         img = img[:, :, ::-1]
         # resize/crop if needed
+
         if self.training:
             img = self.resize(img, size, size)
         else:
@@ -240,6 +242,12 @@ class DynamicFARDataset(torch.utils.data.Dataset):
         imgh, imgw = img.shape[0:2]
         if self.training is False:
             mask = cv2.imread(self.mask_list[index % len(self.mask_list)], cv2.IMREAD_GRAYSCALE)
+
+            h, w = mask.shape
+            if h > w:
+                mask = mask[(h - w) // 2:(h - w) // 2 + w, :]
+            else:
+                mask = mask[:, (w - h) // 2:(w - h) // 2 + h]
             mask = cv2.resize(mask, (imgw, imgh), interpolation=cv2.INTER_NEAREST)
             mask = (mask > 127).astype(np.uint8) * 255
             return mask

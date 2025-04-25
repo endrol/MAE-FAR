@@ -45,6 +45,7 @@ def main(gpu, args, config):
     if args.load_pl:  # load ckpt from pytorch lightning
         print("Loading checkpoint: {} ...".format(args.resume))
         checkpoint = torch.load(args.resume, map_location='cpu')['state_dict']
+
         mae_weights = {}
         g_weights = {}
         for k in checkpoint:
@@ -68,7 +69,7 @@ def main(gpu, args, config):
 
     eval_path = args.output_path
     os.makedirs(eval_path, exist_ok=True)
-
+    print(val_loader.dataset.__len__())
     with torch.no_grad():
         for items in tqdm(val_loader):
             for k in items:
